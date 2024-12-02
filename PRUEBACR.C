@@ -309,34 +309,43 @@ void ActualizarProducto() {
 
 void venderproducto() {
     char codigo[6];
-    int cantidad;
-    int dinero;
-    int precio; 
+    int cantidad, dinero;
+    int encontrado = 0; /*controlar si el producto se encontro*/
+	int total;
 
     printf("Ingrese el codigo del producto a vender: ");
     scanf("%s", codigo);
 
-    for (i = 0; i < totalproducto; i++)  {
+    for (i = 0; i < totalproducto; i++) {
         if (strcmp(inventario[i].codigo, codigo) == 0) {
+            encontrado = 1; /*Producto encontrado*/
             printf("Ingrese la cantidad a vender: ");
             scanf("%d", &cantidad);
-            printf("Ingrese la cantidad de dinero del usuario:");
-            scanf("%d", &dinero);
-            if(dinero >= 0 && dinero > precio){
-                printf("dinero aceptado!"); 
 
             if (cantidad > inventario[i].cantidad) {
                 printf("No hay suficiente cantidad en inventario.\n");
             } else {
-                inventario[i].cantidad -= cantidad;
-                printf("Venta realizada. Total vendido: %d\n", inventario[i].precio * cantidad);
+                printf("Ingrese la cantidad de dinero del usuario: ");
+                scanf("%d", &dinero);
+
+				total = inventario[i].precio * cantidad;
+                if (dinero < total) {
+                    printf("Dinero insuficiente para realizar la compra.\n");
+                } else {
+                    inventario[i].cantidad -= cantidad;
+                    printf("Venta realizada. Total vendido: %d\n", total);
+                    printf("Cambio devuelto: %d\n", dinero - total);
+                }
             }
-            return;
+            break;
         }
     }
-    printf("Producto no encontrado.\n");
+
+    if (!encontrado) {
+        printf("Producto no encontrado.\n");
     }
 }
+
 
 void AgregarCliente() 
 {
