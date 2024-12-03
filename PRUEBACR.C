@@ -2,7 +2,7 @@
 #include <conio.h>
 #include <dos.h>
 #include <string.h>
-#include<graphics.h>
+#include <graphics.h>
 #include <stdlib.h>
 
 int menu, menu2, menu3, menu4;
@@ -30,8 +30,8 @@ struct Producto {
 
 struct Cliente {
     char nombre[20];
-    char codigo[6];
-    int telefono[10];
+    char codigo[20];
+    char telefono[20]; 
 };
 
 struct membresia{
@@ -61,10 +61,23 @@ void Agregarmembresia(void);
 void vermembresia(void);
 void actualizamembresia(void);
 void eliminarmebresia(void);
+
 void mostrarPagina(const char *texto);
 
+void GuardarProductosTXT(void);
+void GuardarClientesTXT(void);
+void GuardarMembresiasTXT(void);
+
+void ActualizarArchivoProductos(void);
+void ActualizarArchivoClientes(void);
+void ActualizarArchivoMembresias(void);
+
+void LeerProductosTXT(void);
+void LeerClientesTXT(void);
+void LeerMembresiasTXT(void);
+
 int main() {
-        const char *pagina1 = "Manual de uso del programa:\n\n"
+    const char *pagina1 = "Manual de uso del programa:\n\n"
                           "Hola querido trabajador, en esta opcion de \"Manual\" podras guiarte...\n"
                           "Al entrar al menu tendras tres opciones:\n"
                           "1. Inventario\n"
@@ -97,6 +110,10 @@ int main() {
     struct UsuaContra sesion;
     clrscr();
     uni();    
+
+    LeerProductosTXT();
+    LeerClientesTXT();
+    LeerMembresiasTXT();
 
     do {
         contador = 1;
@@ -133,12 +150,14 @@ int main() {
                             switch (menu2) {
                                 case 1:
                                     AgregarProducto();
+                                    GuardarProductosTXT();
                                     break;
                                 case 2:
                                     buscar();
                                     break;
                                 case 3:
                                     EliminarProducto();
+                                    ActualizarArchivoProductos();
                                     break;
                                 case 4:
                                     if (totalproducto == 0) {
@@ -150,18 +169,21 @@ int main() {
                                                 inventario[i].cantidad, inventario[i].descripcion);
                                         }
                                     }
+                                    ActualizarArchivoProductos();
                                     break;
                                 case 5:
                                     ActualizarProducto();
+                                    ActualizarArchivoProductos();
                                     break;
                                 case 6:
                                     venderproducto();
+                                    ActualizarArchivoProductos();
                                     break;
                                 case 7:
                                     volvermenu2 = 0;
                                     break;
                                 default:
-                                    printf("Opción no válida.\n");
+                                    printf("Opcion no valida.\n");
                                     break;
                             }
                         } while (volvermenu2 == 1);
@@ -174,23 +196,26 @@ int main() {
                             printf("1. Agregar cliente\n");
                             printf("2. Buscar cliente\n");
                             printf("3. Eliminar cliente\n");
-                            printf("4. Actualizar información del cliente\n");
+                            printf("4. Actualizar informacion del cliente\n");
                             printf("5. Ver cliente\n");
-                            printf("6. Volver al menú\n");
+                            printf("6. Volver al menu\n");
                             scanf("%d", &menu3);
 
                             switch (menu3) {
                                 case 1:
                                     AgregarCliente();
+                                    GuardarClientesTXT();
                                     break;
                                 case 2:
                                     BuscarCliente();
                                     break;
                                 case 3:
                                     eliminarcliente();
+                                    ActualizarArchivoClientes();
                                     break;
                                 case 4:
                                     actualizacliente();
+                                    ActualizarArchivoClientes();
                                     break;
                                 case 5:
                                     if (totalcliente == 0) {
@@ -201,16 +226,18 @@ int main() {
                                                 usuarios[i].codigo, usuarios[i].nombre, usuarios[i].telefono);
                                         }
                                     }
+                                    ActualizarArchivoClientes();
                                     break;
                                 case 6:
                                     volvermenu3 = 0;
                                     break;
                                 default:
-                                    printf("No hay opción disponible.\n");
+                                    printf("No hay opcion disponible.\n");
                                     break;
                             }
                         } while (volvermenu3 == 1);
                         break;
+
                     case 3:
                         printf("1-Agregar membresia\n");
                         printf("2-Ver miembros\n");
@@ -223,15 +250,19 @@ int main() {
                         {
                         case 1:
                             Agregarmembresia();
+                            GuardarMembresiasTXT();
                             break;
                         case 2:
                             vermembresia();
+                            ActualizarArchivoMembresias();
                             break;
                         case 3:
                             actualizamembresia();
+                            ActualizarArchivoMembresias();
                             break;
                         case 4:
                             eliminarmebresia();
+                            ActualizarArchivoMembresias();
                             break;
                         default:
                             break;
@@ -252,12 +283,12 @@ int main() {
                         break;
 
                     default:
-                        printf("Opción no válida\n");
+                        printf("Opcion no valida\n");
                         break;
                 }
             } else {
                 if (contador == 3) {
-                    printf("Lamentamos informarle que falló los 3 intentos\n\n");
+                    printf("Lamentamos informarle que fallo los 3 intentos\n\n");
                 } else {
                     printf("Ingrese los datos nuevamente\n");
                 }
@@ -267,7 +298,52 @@ int main() {
     } while (menu != 3);
     getch();
     return 0;
+}
 
+void LeerProductosTXT() {
+    FILE *archivo = fopen("C:\\TC20\\archivo\\productos.TXT", "rt");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de productos.\n");
+        return;
+    }
+    fscanf(archivo, "%d", &totalproducto);
+    for (i = 0; i < totalproducto; i++) {
+        fscanf(archivo, "%s %s %s %d %d", 
+               inventario[i].codigo, inventario[i].nombre, inventario[i].descripcion,
+               &inventario[i].precio, &inventario[i].cantidad);
+    }
+    fclose(archivo);
+    printf("Productos cargados exitosamente.\n");
+}
+
+void LeerClientesTXT() {
+    FILE *archivo = fopen("C:\\TC20\\archivo\\clientes.TXT", "rt");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de clientes.\n");
+        return;
+    }
+    fscanf(archivo, "%d", &totalcliente);
+    for (i = 0; i < totalcliente; i++) {
+        fscanf(archivo, "%s %s %s", 
+               usuarios[i].codigo, usuarios[i].nombre, usuarios[i].telefono);
+    }
+    fclose(archivo);
+    printf("Clientes cargados exitosamente.\n");
+}
+
+void LeerMembresiasTXT() {
+    FILE *archivo = fopen("C:\\TC20\\archivo\\membresias.TXT", "rt");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de membresías.\n");
+        return;
+    }
+    fscanf(archivo, "%d", &totalmembresia);
+    for (i = 0; i < totalmembresia; i++) {
+        fscanf(archivo, "%s %s %d %d", 
+               meber[i].codigo, meber[i].nombre, meber[i].telefono, &meber[i].precio);
+    }
+    fclose(archivo);
+    printf("Membresías cargadas exitosamente.\n");
 }
 void AgregarProducto() {
     
@@ -452,21 +528,18 @@ void venderproducto() {
 }
 
 
-void AgregarCliente()
-{
+void AgregarCliente() {
     if (totalcliente < 100) {
         printf("Ingrese el nombre del cliente: ");
         scanf("%s", usuarios[totalcliente].nombre);
         printf("Ingrese el codigo del cliente: ");
         scanf("%s", usuarios[totalcliente].codigo);
         printf("Ingrese el telefono del cliente: ");
-        scanf("%d", usuarios[totalcliente].telefono);
-		if( usuarios[totalcliente].telefono >= 0000 &&  usuarios[totalcliente].telefono <= 9999){
-            totalcliente++;
-            printf("Cliente agregado exitosamente.\n");
-        }
+        scanf("%s", usuarios[totalcliente].telefono); 
+        totalcliente++;
+        printf("Cliente agregado exitosamente.\n");
     } else {
-        printf("Registro de clientes lleno.\n");
+        printf("No se puede agregar más clientes.\n");
     }
 }
 
@@ -585,26 +658,27 @@ void uni(){
 }
 
 void Agregarmembresia(){
-	int vuelto;
+    int vuelto;
     if (totalmembresia < 100) {
-    printf("Ingrese el nombre del cliente: ");
-    scanf("%s", meber[totalmembresia].nombre);
-    printf("Ingrese el codigo del cliente: ");
-    scanf("%s", meber[totalmembresia].codigo);
-    printf("Ingrese el telefono del producto: ");
-    scanf("%s", meber[totalmembresia].telefono);
-    printf("ingrese el dinero a ingresar para pagar ");
-    scanf("%d", &meber[totalmembresia].precio);
-    if(meber[totalmembresia].precio > 100){
-        vuelto = meber[totalmembresia].precio - 100;
-        printf("Tu vuelto es: %d", vuelto);
-        totalmembresia++;
-        printf("Obtuviste membresia!!.\n");
-    } else {
-        printf("no obtuviste membresia.\n");
-    }
+        printf("Ingrese el nombre del cliente: ");
+        scanf("%s", meber[totalmembresia].nombre);
+        printf("Ingrese el codigo del cliente: ");
+        scanf("%s", meber[totalmembresia].codigo);
+        printf("Ingrese el telefono del producto: ");
+        scanf("%s", meber[totalmembresia].telefono);
+        printf("Ingresa el dinero para pagar: ");
+        scanf("%d", &meber[totalmembresia].precio);
+
+        if(meber[totalmembresia].precio >= 100){
+            vuelto = meber[totalmembresia].precio - 100;  
+            totalmembresia++;
+            printf("Obtuviste membresia!!.\n");
+        } else {
+            printf("No obtuviste membresia.\n");
+        }
     }
 }
+
 
 void vermembresia(){
    char codigo[6];
@@ -673,6 +747,117 @@ void mostrarPagina(const char *texto) {
     printf("%s\n", texto);
 	printf("\nPresiona cualquier tecla para siguiente pagina.\n");
     getch();
+}
+
+void GuardarProductosTXT() {
+int i;
+    FILE *archivo = fopen("C:\\TC20\\archivo\\productos.TXT", "at");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo.\n");
+        return;
+    }
+    fprintf(archivo, "%d\n", totalproducto);
+	for (i = 0; i < totalproducto; i++) {
+        fprintf(archivo, "%s %s %s %d %d\n",
+                inventario[i].codigo, inventario[i].nombre, inventario[i].descripcion,
+                inventario[i].precio, inventario[i].cantidad);
+    }
+    fclose(archivo);
+    printf("Productos guardados exitosamente.\n");
+}
+
+void GuardarClientesTXT() {
+    int i;
+    FILE *archivo = fopen("C:\\TC20\\archivo\\clientes.TXT", "wt");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo para guardar clientes.\n");
+        return;
+    }
+    fprintf(archivo, "%d\n", totalcliente);
+    for (i = 0; i < totalcliente; i++) {
+        fprintf(archivo, "%s %s %s\n", 
+                usuarios[i].codigo, usuarios[i].nombre, usuarios[i].telefono); 
+    }
+    fclose(archivo);
+    printf("Clientes guardados exitosamente.\n");
+}
+void GuardarMembresiasTXT() {
+int i;
+    FILE *archivo = fopen("C:\\TC20\\archivo\\membresias.TXT", "at");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo.\n");
+        return;
+    }
+    fprintf(archivo, "%d\n", totalmembresia); 
+    for (i = 0; i < totalmembresia; i++) {
+        fprintf(archivo, "%s %s %s %d\n", 
+                meber[i].codigo, meber[i].nombre, meber[i].telefono, meber[i].precio);
+    }
+    fclose(archivo);
+    printf("Membresias guardadas exitosamente.\n");
+}
+
+void ActualizarArchivoProductos() {
+int i;
+	FILE *archivo = fopen("C:\\TC20\\archivo\\productos.TXT", "wt");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de productos.\n");
+        return;
+    }
+
+    fprintf(archivo, "%d\n", totalproducto);
+	for (i = 0; i < totalproducto; i++) {
+        fprintf(archivo, "%s %s %s %d %d\n",
+                inventario[i].codigo,
+                inventario[i].nombre,
+                inventario[i].descripcion,
+                inventario[i].precio,
+                inventario[i].cantidad);
+    }
+
+    fclose(archivo);
+    printf("Archivo de productos actualizado correctamente.\n");
+}
+
+void ActualizarArchivoClientes() {
+int i;
+    FILE *archivo = fopen("C:\\TC20\\archivo\\clientes.TXT", "wt");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de clientes.\n");
+        return;
+    }
+
+    fprintf(archivo, "%d\n", totalcliente);
+	for (i = 0; i < totalcliente; i++) {
+        fprintf(archivo, "%s %s %d\n",
+                usuarios[i].codigo,
+                usuarios[i].nombre,
+                usuarios[i].telefono);
+    }
+
+    fclose(archivo);
+    printf("Archivo de clientes actualizado correctamente.\n");
+}
+
+void ActualizarArchivoMembresias() {
+int i;
+    FILE *archivo = fopen("C:\\TC20\\archivo\\membresias.TXT", "wt");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo de membresias.\n");
+        return;
+    }
+
+    fprintf(archivo, "%d\n", totalmembresia);
+	for (i = 0; i < totalmembresia; i++) {
+        fprintf(archivo, "%s %s %d %d\n",
+                meber[i].codigo,
+                meber[i].nombre,
+                meber[i].telefono,
+                meber[i].precio);
+    }
+
+    fclose(archivo);
+    printf("Archivo de membresias actualizado correctamente.\n");
 }
 
 
