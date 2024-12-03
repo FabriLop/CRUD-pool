@@ -3,6 +3,7 @@
 #include <dos.h>
 #include <string.h>
 #include<graphics.h>
+#include <stdlib.h>
 
 int menu, menu2, menu3, menu4;
 int contador = 1;
@@ -60,8 +61,39 @@ void Agregarmembresia(void);
 void vermembresia(void);
 void actualizamembresia(void);
 void eliminarmebresia(void);
+void mostrarPagina(const char *texto);
 
 int main() {
+        const char *pagina1 = "Manual de uso del programa:\n\n"
+                          "Hola querido trabajador, en esta opcion de \"Manual\" podras guiarte...\n"
+                          "Al entrar al menu tendras tres opciones:\n"
+                          "1. Inventario\n"
+                          "2. Clientes\n"
+                          "3. Salir\n";
+
+    const char *pagina2 = "1. En la opcion \"Inventario\" podras realizar varias acciones:\n"
+                          "   - Agregar: Implementa nuevos productos ingresando datos como nombre, codigo,\n"
+                          "     descripcion, precio y cantidad.\n"
+                          "   - Buscar: Encuentra un producto por nombre o codigo.\n"
+                          "   - Eliminar: Borra un producto del inventario.\n"
+                          "   - Ver Inventario: Muestra todos los productos registrados.\n"
+                          "   - Actualizar: Modifica los datos de un producto existente.\n"
+                          "   - Vender: Registra una venta con datos del producto y cliente.\n";
+
+    const char *pagina3 = "2. En la opcion \"Clientes\" podras realizar estas acciones:\n"
+                          "   - Agregar cliente: Registra nombre, codigo y telefono del cliente.\n"
+                          "   - Buscar cliente: Encuentra un cliente por codigo.\n"
+                          "   - Eliminar cliente: Borra un cliente del programa.\n"
+                          "   - Actualizar informacion: Modifica datos de un cliente registrado.\n"
+                          "   - Ver cliente: Muestra toda la informacion de los clientes registrados.\n";
+
+    const char *pagina4 = "3. En la opcion \"Membresias\" podras hacer las mismas funciones similares que\n"
+        "haz utilizando anteriormente, podras ver los miembros, actualizarlos, eliminarlos y poder volver al menu\n\n"
+    
+        "5. Salir del programa: Cierra el sistema.\n\n"
+        "Esperamos que este manual haya sido de ayuda.\n"
+        "Gracias por utilizar nuestro programa!\n";
+
     struct UsuaContra sesion;
     clrscr();
     uni();    
@@ -73,8 +105,8 @@ int main() {
             scanf("%s", sesion.usuario);
             printf("Favor ingresar su contrasena\n");
             scanf("%s", sesion.contrasena);
-
             if (strcmp(sesion.usuario, "fabri2024") == 0 && strcmp(sesion.contrasena, "12") == 0) {
+
                 clrscr();
                 printf("Bienvenido al menú\n");
                 printf("1-Inventario\n");
@@ -205,6 +237,15 @@ int main() {
                             break;
                         }
                         break;
+                    
+                    case 4: 
+                        printf("Mostrando el manual del programa:\n\n");
+
+                        mostrarPagina(pagina1);
+                        mostrarPagina(pagina2);
+                        mostrarPagina(pagina3);
+                        mostrarPagina(pagina4);
+
                     case 5:
                         printf("Ten buen dia estimado %s\n", sesion.usuario);
                         return 0;
@@ -224,11 +265,10 @@ int main() {
             }
         }
     } while (menu != 3);
-
     getch();
     return 0;
-}
 
+}
 void AgregarProducto() {
     
     if (totalproducto < 100) {
@@ -252,12 +292,10 @@ void AgregarProducto() {
         printf("Inventario lleno. No se pueden agregar más productos.\n");
     }
 }
-
 void buscar() {
     char nombre[12];
     char codigo[6];
     int encontrado = 0;
-
     printf("1. Buscar por nombre\n");
     printf("2. Buscar por codigo\n");
     scanf("%d", &encontrar);
@@ -298,7 +336,6 @@ void buscar() {
                 printf("Producto no encontrado.\n");
             }
             break;
-
         default:
             printf("Opción no válida.\n");
             break;
@@ -331,7 +368,6 @@ void ActualizarProducto() {
     char codigo[6];
     printf("Ingrese el codigo del producto a actualizar: ");
     scanf("%s", codigo);
-
     for (i = 0; i < totalproducto; i++) {
         if (strcmp(inventario[i].codigo, codigo) == 0) {
             printf("Actualizar el nombre del producto (actual: %s): ", inventario[i].nombre);
@@ -356,34 +392,65 @@ void ActualizarProducto() {
 
 void venderproducto() {
     char codigo[6];
-    int cantidad;
-    int dinero;
-    int precio;
+    int cantidad, dinero;
+    int encontrado = 0; /*si el producto se encontro*/
+    int tieneMembresia, aniosMembresia;
+    float descuento, total;
 
     printf("Ingrese el codigo del producto a vender: ");
     scanf("%s", codigo);
 
-    for (i = 0; i < totalproducto; i++)  {
+    for (i = 0; i < totalproducto; i++) {
         if (strcmp(inventario[i].codigo, codigo) == 0) {
+			encontrado = 1; 
             printf("Ingrese la cantidad a vender: ");
             scanf("%d", &cantidad);
-            printf("Ingrese la cantidad de dinero del usuario:");
-            scanf("%d", &dinero);
-            if(dinero >= 0 && dinero > precio){
-                printf("dinero aceptado!");
 
             if (cantidad > inventario[i].cantidad) {
                 printf("No hay suficiente cantidad en inventario.\n");
             } else {
-                inventario[i].cantidad -= cantidad;
-                printf("Venta realizada. Total vendido: %d\n", inventario[i].precio * cantidad);
+                total = inventario[i].precio * cantidad;
+
+               
+                printf("El cliente tiene una membresia activa mayor a un anio? (1: Si, 0: No): ");
+                scanf("%d", &tieneMembresia);
+
+                if (tieneMembresia == 1) {
+                    printf("Cuantos anios tiene con la membresia?: ");
+                    scanf("%d", &aniosMembresia);
+
+            
+                    descuento = (aniosMembresia * 10) / 100.0;
+                    if (descuento > 0.5) {
+                        descuento = 0.5;
+                    }
+                    total -= total * descuento; 
+                    printf("Se aplico un descuento del %.0f%%. Total con descuento: %.2f\n", descuento * 100, total);
+                } else {
+                    printf("No se aplica descuento. Total: %.2f\n", total);
+                }
+
+
+                printf("Ingrese la cantidad de dinero del cliente: ");
+                scanf("%d", &dinero);
+
+                if (dinero < total) {
+                    printf("Dinero insuficiente para realizar la compra.\n");
+                } else {
+                    inventario[i].cantidad -= cantidad;
+                    printf("Venta realizada. Total vendido: %.2f\n", total);
+                    printf("Cambio devuelto: %.2f\n", dinero - total);
+                }
             }
-            return;
+            break; 
         }
     }
-    printf("Producto no encontrado.\n");
+
+    if (!encontrado) {
+        printf("Producto no encontrado.\n");
     }
 }
+
 
 void AgregarCliente()
 {
@@ -448,14 +515,13 @@ void actualizacliente(){
     char codigo[6];
     printf("Ingrese el codigo del cliente a actualizar: ");
     scanf("%s", codigo);
-
+    
     for (i = 0; i < totalcliente; i++) {
         if (strcmp(usuarios[i].codigo, codigo) == 0) {
             printf("Actualizar el nombre del cliente (actual: %s): ", usuarios[i].nombre);
             scanf("%s", usuarios[i].nombre);
             printf("Actualizar el telefono del cliente (actual: %s): ", usuarios[i].telefono);
             scanf("%d", usuarios[i].telefono);
-
 		 if( usuarios[i].telefono >= 0000 &&  usuarios[i].telefono <= 9999){
             printf("Cliente actualizado exitosamente.\n");
             return;
@@ -503,7 +569,7 @@ void uni(){
 	setcolor(0);
 	outtextxy(380,400, "Fabrizio Lopez Mejia");
     settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
-	outtextxy(380,410, "Bismarck Santana Bermudes");
+	outtextxy(380,410, "Bismarck Santana Bermudez");
     settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
 
 	for(i = 0; i < 16; i++){
@@ -511,7 +577,7 @@ void uni(){
 	setcolor(0+i);
 	outtextxy(380,400, "Fabrizio Lopez Mejia");
     settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
-	outtextxy(380,410, "Bismarck Santana Bermudes");
+	outtextxy(380,410, "Bismarck Santana Bermudez");
     settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
 	}
     getch();
@@ -519,7 +585,7 @@ void uni(){
 }
 
 void Agregarmembresia(){
-    int vuelto
+	int vuelto;
     if (totalmembresia < 100) {
     printf("Ingrese el nombre del cliente: ");
     scanf("%s", meber[totalmembresia].nombre);
@@ -542,7 +608,7 @@ void Agregarmembresia(){
 
 void vermembresia(){
    char codigo[6];
-    int encontrado = 0;
+	int encontrado = 0;
 
     printf("Ingrese el codigo del cliente a buscar: ");
     scanf("%s", codigo);
@@ -557,21 +623,19 @@ void vermembresia(){
     if (!encontrado) {
         printf("Cliente no encontrado.\n");
     }
-    
+
 }
 
 void actualizamembresia(){
     char codigo[6];
     printf("Ingrese el codigo del cliente a actualizar: ");
     scanf("%s", codigo);
-
     for (i = 0; i < totalmembresia; i++) {
         if (strcmp(meber[i].codigo, codigo) == 0) {
             printf("Actualizar el nombre del cliente (actual: %s): ", meber[i].nombre);
             scanf("%s", meber[i].nombre);
             printf("Actualizar el telefono del cliente (actual: %s): ", meber[i].telefono);
             scanf("%d", meber[i].telefono);
-
 		 if( meber[i].telefono >= 0000 &&  meber[i].telefono <= 9999){
             printf("Cliente actualizado exitosamente.\n");
             return;
@@ -581,6 +645,7 @@ void actualizamembresia(){
         }
     }
 }
+
 void eliminarmebresia(){
     char codigo[6];
     int encontrado = 0;
@@ -602,3 +667,12 @@ void eliminarmebresia(){
         printf("Cliente no encontrado para eliminar.\n");
     }
 }
+
+void mostrarPagina(const char *texto) {
+	clrscr();
+    printf("%s\n", texto);
+	printf("\nPresiona cualquier tecla para siguiente pagina.\n");
+    getch();
+}
+
+
