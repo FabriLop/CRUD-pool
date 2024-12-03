@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include <conio.h>
+#include <dos.h>
 #include <string.h>
+#include<graphics.h>
 
-int menu, menu2, menu3;
+int menu, menu2, menu3, menu4;
 int contador = 1;
 int totalproducto = 0;
 int totalcliente = 0;
+int totalmembresia = 0;
 int ingresar = 0, a = 0;
-int encontrar; 
+int encontrar;
 int i;
-int volvermenu, volvermenu2, volvermenu3;
+int volvermenu, volvermenu2, volvermenu3, volvermenu4;
 
 struct UsuaContra {
     char contrasena[20];
@@ -30,8 +33,16 @@ struct Cliente {
     int telefono[10];
 };
 
+struct membresia{
+    char nombre[20];
+    char codigo[20];
+    int telefono[20];
+    int precio[20];
+};
+
 struct Producto inventario[100];
 struct Cliente usuarios[100];
+struct membresia meber[100];
 
 void AgregarProducto(void);
 void buscar(void);
@@ -43,10 +54,17 @@ void AgregarCliente(void);
 void BuscarCliente(void);
 void eliminarcliente(void);
 void actualizacliente(void);
+void uni(void);
+
+void Agregarmembresia(void);
+void vermembresia(void);
+void actualizamembresia(void);
+void eliminarmebresia(void);
 
 int main() {
     struct UsuaContra sesion;
     clrscr();
+    uni();    
 
     do {
         contador = 1;
@@ -61,7 +79,9 @@ int main() {
                 printf("Bienvenido al menú\n");
                 printf("1-Inventario\n");
                 printf("2- Clientes\n");
-                printf("3-Salir\n");
+                printf("3-membresias\n");
+                printf("4-Manual de ayuda\n");
+                printf("5-Salir\n");
                 scanf("%d", &menu);
 
                 switch (menu) {
@@ -94,7 +114,7 @@ int main() {
                                     } else {
                                         for (i = 0; i < totalproducto; i++) {
                                             printf("Codigo: %s, Nombre: %s, Precio: %d, Cantidad: %d, Descripcion: %s\n",
-                                                inventario[i].codigo, inventario[i].nombre, inventario[i].precio, 
+                                                inventario[i].codigo, inventario[i].nombre, inventario[i].precio,
                                                 inventario[i].cantidad, inventario[i].descripcion);
                                         }
                                     }
@@ -159,10 +179,36 @@ int main() {
                             }
                         } while (volvermenu3 == 1);
                         break;
-
                     case 3:
+                        printf("1-Agregar membresia\n");
+                        printf("2-Ver miembros\n");
+                        printf("3-Actualizar miembros\n");
+                        printf("4-Eliminar miembros\n");
+                        printf("5-Volver al menu\n");
+                        scanf("%d", &menu4);
+
+                        switch (menu4)
+                        {
+                        case 1:
+                            Agregarmembresia();
+                            break;
+                        case 2:
+                            vermembresia();
+                            break;
+                        case 3:
+                            actualizamembresia();
+                            break;
+                        case 4:
+                            eliminarmebresia();
+                            break;
+                        default:
+                            break;
+                        }
+                        break;
+                    case 5:
                         printf("Ten buen dia estimado %s\n", sesion.usuario);
                         return 0;
+                        break;
 
                     default:
                         printf("Opción no válida\n");
@@ -184,6 +230,7 @@ int main() {
 }
 
 void AgregarProducto() {
+    
     if (totalproducto < 100) {
         printf("Ingrese el nombre del producto: ");
         scanf("%s", inventario[totalproducto].nombre);
@@ -193,10 +240,10 @@ void AgregarProducto() {
         scanf("%s", inventario[totalproducto].descripcion);
         printf("Ingrese el precio del producto: ");
         scanf("%d", &inventario[totalproducto].precio);
-        if(inventario[totalproducto].precio > 0){ 
+        if(inventario[totalproducto].precio > 0){
             printf("Ingrese la cantidad del producto: ");
             scanf("%d", &inventario[totalproducto].cantidad);
-            if(inventario[totalproducto].cantidad > 0){ 
+            if(inventario[totalproducto].cantidad > 0){
             totalproducto++;
             printf("Producto agregado exitosamente.\n");
             }
@@ -293,7 +340,7 @@ void ActualizarProducto() {
             scanf("%s", inventario[i].descripcion);
             printf("Actualizar el precio del producto (actual: %d): ", inventario[i].precio);
             scanf("%d", &inventario[i].precio);
-            if(inventario[i].precio >= 0){             
+            if(inventario[i].precio >= 0){
                 printf("Actualizar la cantidad del producto (actual: %d): ", inventario[i].cantidad);
                 scanf("%d", &inventario[i].cantidad);
 				if(inventario[i].cantidad > 0){
@@ -301,7 +348,7 @@ void ActualizarProducto() {
                 }else{
                     printf("como vas a meter menos un producto ._.");
                 }
-            }   
+            }
         }
     }
     printf("Producto no encontrado.\n");
@@ -309,45 +356,36 @@ void ActualizarProducto() {
 
 void venderproducto() {
     char codigo[6];
-    int cantidad, dinero;
-    int encontrado = 0; /*controlar si el producto se encontro*/
-	int total;
+    int cantidad;
+    int dinero;
+    int precio;
 
     printf("Ingrese el codigo del producto a vender: ");
     scanf("%s", codigo);
 
-    for (i = 0; i < totalproducto; i++) {
+    for (i = 0; i < totalproducto; i++)  {
         if (strcmp(inventario[i].codigo, codigo) == 0) {
-            encontrado = 1; /*Producto encontrado*/
             printf("Ingrese la cantidad a vender: ");
             scanf("%d", &cantidad);
+            printf("Ingrese la cantidad de dinero del usuario:");
+            scanf("%d", &dinero);
+            if(dinero >= 0 && dinero > precio){
+                printf("dinero aceptado!");
 
             if (cantidad > inventario[i].cantidad) {
                 printf("No hay suficiente cantidad en inventario.\n");
             } else {
-                printf("Ingrese la cantidad de dinero del usuario: ");
-                scanf("%d", &dinero);
-
-				total = inventario[i].precio * cantidad;
-                if (dinero < total) {
-                    printf("Dinero insuficiente para realizar la compra.\n");
-                } else {
-                    inventario[i].cantidad -= cantidad;
-                    printf("Venta realizada. Total vendido: %d\n", total);
-                    printf("Cambio devuelto: %d\n", dinero - total);
-                }
+                inventario[i].cantidad -= cantidad;
+                printf("Venta realizada. Total vendido: %d\n", inventario[i].precio * cantidad);
             }
-            break;
+            return;
         }
     }
-
-    if (!encontrado) {
-        printf("Producto no encontrado.\n");
+    printf("Producto no encontrado.\n");
     }
 }
 
-
-void AgregarCliente() 
+void AgregarCliente()
 {
     if (totalcliente < 100) {
         printf("Ingrese el nombre del cliente: ");
@@ -384,7 +422,7 @@ void BuscarCliente(void) {
     }
 }
 
-void eliminarcliente(){ 
+void eliminarcliente(){
     char codigo[6];
     int encontrado = 0;
 	int j;
@@ -417,14 +455,150 @@ void actualizacliente(){
             scanf("%s", usuarios[i].nombre);
             printf("Actualizar el telefono del cliente (actual: %s): ", usuarios[i].telefono);
             scanf("%d", usuarios[i].telefono);
-            
+
 		 if( usuarios[i].telefono >= 0000 &&  usuarios[i].telefono <= 9999){
             printf("Cliente actualizado exitosamente.\n");
             return;
             }
-        }else{ 
+        }else{
         printf("Cliente no encontrado.\n");
         }
     }
 }
-
+
+void uni(){
+    int driver=DETECT,modo;
+	initgraph(&driver,&modo," ");
+	cleardevice();
+
+	/*Color de fondo*/
+	setcolor(WHITE);
+	setfillstyle(1,WHITE);
+	bar(0,0,640,480);
+
+	/*Letra U*/
+	setcolor(BLUE);
+	setfillstyle(1,BLUE);
+	bar(53,88,147,338);
+	delay(300);
+	bar(137,250,323,338);
+	delay(300);
+	bar(235,150,323,338);
+	delay(300);
+
+	/*letra N*/
+	bar(153,242,230,88);
+	delay(300);
+	bar(230,88,425,144);
+	delay(300);
+	bar(331,144,425,338);
+
+	/*letra i*/
+	bar(423,258,504,338);
+	delay(300);
+	bar(504,338,433,161);
+	delay(300);
+	bar(433,88,502,151);
+
+	setcolor(0);
+	outtextxy(380,400, "Fabrizio Lopez Mejia");
+    settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
+	outtextxy(380,410, "Bismarck Santana Bermudes");
+    settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
+
+	for(i = 0; i < 16; i++){
+	delay(300);
+	setcolor(0+i);
+	outtextxy(380,400, "Fabrizio Lopez Mejia");
+    settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
+	outtextxy(380,410, "Bismarck Santana Bermudes");
+    settextstyle(DEFAULT_FONT, HORIZ_DIR,1);
+	}
+    getch();
+    closegraph();
+}
+
+void Agregarmembresia(){
+    int vuelto
+    if (totalmembresia < 100) {
+    printf("Ingrese el nombre del cliente: ");
+    scanf("%s", meber[totalmembresia].nombre);
+    printf("Ingrese el codigo del cliente: ");
+    scanf("%s", meber[totalmembresia].codigo);
+    printf("Ingrese el telefono del producto: ");
+    scanf("%s", meber[totalmembresia].telefono);
+    printf("ingrese el dinero a ingresar para pagar ");
+    scanf("%d", &meber[totalmembresia].precio);
+    if(meber[totalmembresia].precio > 100){
+        vuelto = meber[totalmembresia].precio - 100;
+        printf("Tu vuelto es: %d", vuelto);
+        totalmembresia++;
+        printf("Obtuviste membresia!!.\n");
+    } else {
+        printf("no obtuviste membresia.\n");
+    }
+    }
+}
+
+void vermembresia(){
+   char codigo[6];
+    int encontrado = 0;
+
+    printf("Ingrese el codigo del cliente a buscar: ");
+    scanf("%s", codigo);
+    for (i = 0; i < totalmembresia; i++) {
+        if (strcmp(meber[i].codigo, codigo) == 0) {
+            printf("Cliente encontrado:\n");
+            printf("Codigo: %s, Nombre: %s, telefono: %d\n", meber[i].codigo, meber[i].nombre, meber[i].telefono);
+            encontrado = 1;
+            break;
+        }
+    }
+    if (!encontrado) {
+        printf("Cliente no encontrado.\n");
+    }
+    
+}
+
+void actualizamembresia(){
+    char codigo[6];
+    printf("Ingrese el codigo del cliente a actualizar: ");
+    scanf("%s", codigo);
+
+    for (i = 0; i < totalmembresia; i++) {
+        if (strcmp(meber[i].codigo, codigo) == 0) {
+            printf("Actualizar el nombre del cliente (actual: %s): ", meber[i].nombre);
+            scanf("%s", meber[i].nombre);
+            printf("Actualizar el telefono del cliente (actual: %s): ", meber[i].telefono);
+            scanf("%d", meber[i].telefono);
+
+		 if( meber[i].telefono >= 0000 &&  meber[i].telefono <= 9999){
+            printf("Cliente actualizado exitosamente.\n");
+            return;
+            }
+        }else{
+        printf("Cliente no encontrado.\n");
+        }
+    }
+}
+void eliminarmebresia(){
+    char codigo[6];
+    int encontrado = 0;
+	int j;
+    printf("Ingrese el codigo del cliente a eliminar: ");
+    scanf("%s", codigo);
+    for (i = 0; i < totalmembresia; i++) {
+        if (strcmp(meber[i].codigo, codigo) == 0) {
+			for (j = i; j < totalmembresia - 1; j++) {
+                meber[j] = meber[j + 1];
+            }
+            totalmembresia--;
+            printf("Cliente eliminado exitosamente.\n");
+            encontrado = 1;
+            break;
+        }
+    }
+    if (!encontrado) {
+        printf("Cliente no encontrado para eliminar.\n");
+    }
+}
