@@ -4,6 +4,7 @@
 #include <string.h>
 #include <graphics.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 int menu, menu2, menu3, menu4;
 int contador = 1;
@@ -31,7 +32,7 @@ struct Producto {
 struct Cliente {
     char nombre[20];
     char codigo[20];
-    char telefono[20]; 
+    char telefono[20];
 };
 
 struct membresia{
@@ -77,6 +78,8 @@ void LeerClientesTXT(void);
 void LeerMembresiasTXT(void);
 
 int main() {
+
+char caracter;
     const char *pagina1 = "Manual de uso del programa:\n\n"
                           "Hola querido trabajador, en esta opcion de \"Manual\" podras guiarte...\n"
                           "Al entrar al menu tendras tres opciones:\n"
@@ -102,14 +105,14 @@ int main() {
 
     const char *pagina4 = "3. En la opcion \"Membresias\" podras hacer las mismas funciones similares que\n"
         "haz utilizando anteriormente, podras ver los miembros, actualizarlos, eliminarlos y poder volver al menu\n\n"
-    
+
         "5. Salir del programa: Cierra el sistema.\n\n"
         "Esperamos que este manual haya sido de ayuda.\n"
         "Gracias por utilizar nuestro programa!\n";
 
     struct UsuaContra sesion;
     clrscr();
-    uni();    
+    uni();
 
     LeerProductosTXT();
     LeerClientesTXT();
@@ -118,11 +121,18 @@ int main() {
     do {
         contador = 1;
         while (contador <= 3) {
-            printf("Buen dia estimado Trabajor!, Por favor ingresar su usuario.\n");
-            scanf("%s", sesion.usuario);
-            printf("Favor ingresar su contrasena\n");
-            scanf("%s", sesion.contrasena);
-            if (strcmp(sesion.usuario, "fabri2024") == 0 && strcmp(sesion.contrasena, "12") == 0) {
+
+			printf("Buen dia estimado Trabajor!, Por favor ingresar su usuario.\n");
+			scanf("%s", sesion.usuario);
+			printf("Favor ingresar su contrasena\n");
+			i = 0;
+
+            while ((caracter = getch()) != 13) {
+                if (caracter == 8 && i > 0) { i--; printf("\b \b"); }
+                else if (caracter >= 33 && i < 15) { sesion.contrasena[i++] = caracter; printf("*"); }
+            }
+			sesion.contrasena[i] = '\0';
+            if (strcmp(sesion.usuario, "fabri2024") == 0 && strcmp(sesion.contrasena, "1234") == 0) {
 
                 clrscr();
                 printf("Bienvenido al menú\n");
@@ -174,6 +184,7 @@ int main() {
                                 case 5:
                                     ActualizarProducto();
                                     ActualizarArchivoProductos();
+									
                                     break;
                                 case 6:
                                     venderproducto();
@@ -462,14 +473,16 @@ void ActualizarProducto() {
                 }
             }
         }
+		
     }
+	
     printf("Producto no encontrado.\n");
 }
 
 void venderproducto() {
     char codigo[6];
     int cantidad, dinero;
-    int encontrado = 0; /*si el producto se encontro*/
+	int encontrado = 0; /*si el producto se encontro*/
     int tieneMembresia, aniosMembresia;
     float descuento, total;
 
@@ -478,7 +491,7 @@ void venderproducto() {
 
     for (i = 0; i < totalproducto; i++) {
         if (strcmp(inventario[i].codigo, codigo) == 0) {
-			encontrado = 1; 
+			encontrado = 1;
             printf("Ingrese la cantidad a vender: ");
             scanf("%d", &cantidad);
 
@@ -530,12 +543,49 @@ void venderproducto() {
 
 void AgregarCliente() {
     if (totalcliente < 100) {
-        printf("Ingrese el nombre del cliente: ");
+        do
+        {
+
+
+        printf("Ingrese el nombre de usuario: ");
         scanf("%s", usuarios[totalcliente].nombre);
+        if (strlen(usuarios[totalcliente].nombre) < 3) {
+			printf( "Error: Nombre demasiado corto.\n");
+
+
+        }
+        } while (strlen(usuarios[totalcliente].nombre) < 3);
+
+
+
+        do
+        {
+            
+        
         printf("Ingrese el codigo del cliente: ");
         scanf("%s", usuarios[totalcliente].codigo);
+
+        } while (strlen(usuarios[totalcliente].codigo) < 2 || 
+            !isdigit(usuarios[totalcliente].codigo[0]) || 
+            !isdigit(usuarios[totalcliente].codigo[1])||
+            !isdigit(usuarios[totalcliente].codigo[2])||
+            strlen(usuarios[totalcliente].codigo) > 3);
+
+
+        
+        do
+        {
+    
+    
         printf("Ingrese el telefono del cliente: ");
         scanf("%s", usuarios[totalcliente].telefono); 
+            if (strlen(usuarios[totalcliente].telefono) != 8 || 
+            strspn(usuarios[totalcliente].telefono, "0123456789") != 8) {
+            printf("Error: Numero de telefono invalido. Debe tener 8 digitos.\n");
+            continue;
+        }
+        } while (strlen(usuarios[totalcliente].telefono) != 8 || strlen(usuarios[totalcliente].telefono < 0));
+
         totalcliente++;
         printf("Cliente agregado exitosamente.\n");
     } else {
@@ -584,7 +634,7 @@ void eliminarcliente(){
     }
 }
 
-void actualizacliente(){
+void actualizacliente() {
     char codigo[6];
     printf("Ingrese el codigo del cliente a actualizar: ");
     scanf("%s", codigo);
@@ -597,6 +647,8 @@ void actualizacliente(){
             scanf("%d", usuarios[i].telefono);
 		 if( usuarios[i].telefono >= 0000 &&  usuarios[i].telefono <= 9999){
             printf("Cliente actualizado exitosamente.\n");
+
+			ActualizarArchivoClientes();
             return;
             }
         }else{
@@ -604,6 +656,7 @@ void actualizacliente(){
         }
     }
 }
+
 
 void uni(){
     int driver=DETECT,modo;
@@ -658,27 +711,71 @@ void uni(){
 }
 
 void Agregarmembresia(){
-    int vuelto;
-    if (totalmembresia < 100) {
-        printf("Ingrese el nombre del cliente: ");
-        scanf("%s", meber[totalmembresia].nombre);
+   int vuelto;
+   if (totalmembresia < 100) {
+        do
+        {
+
+
+        printf("Ingrese el nombre de usuario: ");
+        scanf("%s", usuarios[totalmembresia].nombre);
+        if (strlen(usuarios[totalmembresia].nombre) < 3) {
+			printf( "Error: Nombre demasiado corto.\n");
+
+
+        }
+        } while (strlen(usuarios[totalmembresia].nombre) < 3);
+
+
+
+        do
+        {
+
+
         printf("Ingrese el codigo del cliente: ");
-        scanf("%s", meber[totalmembresia].codigo);
-        printf("Ingrese el telefono del producto: ");
-        scanf("%s", meber[totalmembresia].telefono);
-        printf("Ingresa el dinero para pagar: ");
+        scanf("%s", usuarios[totalmembresia].codigo);
+
+        } while (strlen(usuarios[totalmembresia].codigo) < 2 ||
+            !isdigit(usuarios[totalmembresia].codigo[0]) ||
+            !isdigit(usuarios[totalmembresia].codigo[1])||
+            !isdigit(usuarios[totalmembresia].codigo[2])||
+            strlen(usuarios[totalmembresia].codigo) > 3);
+
+
+
+        do
+        {
+
+
+        printf("Ingrese el telefono del cliente: ");
+        scanf("%s", usuarios[totalmembresia].telefono);
+            if (strlen(usuarios[totalmembresia].telefono) != 8 ||
+            strspn(usuarios[totalmembresia].telefono, "0123456789") != 8) {
+            printf("Error: Numero de telefono invalido. Debe tener 8 digitos.\n");
+            continue;
+        }
+        } while (strlen(usuarios[totalmembresia].telefono) != 8 || strlen(usuarios[totalcliente].telefono < 0));
+
+
+
+		printf("Ingresa el dinero para pagar: ");
         scanf("%d", &meber[totalmembresia].precio);
 
         if(meber[totalmembresia].precio >= 100){
-            vuelto = meber[totalmembresia].precio - 100;  
+            vuelto = meber[totalmembresia].precio - 100;
+
             totalmembresia++;
-            printf("Obtuviste membresia!!.\n");
-        } else {
-            printf("No obtuviste membresia.\n");
-        }
+
+
+
+
+
+        printf("Obtuviste la membresia.\n");
+    } else {
+        printf("No se puede agregar más clientes.\n");
     }
 }
-
+}
 
 void vermembresia(){
    char codigo[6];
@@ -712,6 +809,8 @@ void actualizamembresia(){
             scanf("%d", meber[i].telefono);
 		 if( meber[i].telefono >= 0000 &&  meber[i].telefono <= 9999){
             printf("Cliente actualizado exitosamente.\n");
+
+			ActualizarArchivoMembresias();
             return;
             }
         }else{
@@ -821,6 +920,7 @@ int i;
 
 void ActualizarArchivoClientes() {
 int i;
+	
     FILE *archivo = fopen("C:\\TC20\\archivo\\clientes.TXT", "wt");
     if (archivo == NULL) {
         printf("Error al abrir el archivo de clientes.\n");
